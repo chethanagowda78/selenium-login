@@ -1,57 +1,66 @@
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-URL = "http://127.0.0.1:8000"
+# Configure Chrome for GitHub Actions
+options = webdriver.ChromeOptions()
+options.add_argument("--headless=new")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--disable-gpu")
+options.add_argument("--window-size=1920,1080")
 
-# Step 1: Open Chrome
-driver = webdriver.Chrome()
+# Start Chrome
+driver = webdriver.Chrome(options=options)
 
 try:
-    # Step 2: Maximize the browser window
-    driver.maximize_window()
+    # Open login page
+    driver.get("http://127.0.0.1:5000/")
 
-    # Step 3: Open the login page
-    driver.get(URL)
+    wait = WebDriverWait(driver, 15)
 
-    wait = WebDriverWait(driver, 10)
+    print("Student Login Page Opened")
 
-    # Step 4: Enter username
-    username = wait.until(
-        EC.visibility_of_element_located((By.ID, "username"))
-    )
-    username.send_keys("student")
-
-    # Step 5: Enter password
+    # Test 1: Correct username and password
+    username = driver.find_element(By.ID, "username")
     password = driver.find_element(By.ID, "password")
+
+    username.send_keys("student")
     password.send_keys("student123")
 
-    # Step 6: Click the Login button
-    login_button = driver.find_element(By.ID, "loginButton")
-    login_button.click()
+    driver.find_element(By.ID, "loginButton").click()
 
-    # Step 7: Verify the success message
-    message = wait.until(
+    result = wait.until(
         EC.visibility_of_element_located((By.ID, "message"))
     )
 
-    assert message.text == "Login successful!", (
-        f"Unexpected message: {message.text}"
+    assert result.text == "Login successful!"
+
+    print("TEST 1 PASSED: Valid login successful")
+
+    # Test 2: Incorrect password
+    username.clear()
+    password.clear()
+
+    username.send_keys("student")
+    password.send_keys("wrong123")
+
+    driver.find_element(By.ID, "loginButton").click()
+
+    result = wait.until(
+        EC.text_to_be_present_in_element(
+            (By.ID, "message"),
+            "Invalid username or password!"
+        )
     )
 
-    print("TEST PASSED: Login successful!")
-    print("Username: student")
-    print("Expected message verified.")
+    assert result
 
-    # Step 8: Keep Chrome open until you press Enter
-    input("Press Enter to close the browser...")
+    print("TEST 2 PASSED: Invalid login rejected")
 
-except Exception as error:
-    print("TEST FAILED:", error)
-    input("Press Enter to close the browser...")
+    print("ALL SELENIUM TESTS PASSED!")
 
 finally:
-    # Step 9: Close Chrome
     driver.quit()
