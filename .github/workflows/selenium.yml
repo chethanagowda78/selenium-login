@@ -1,0 +1,42 @@
+```yaml
+name: Selenium Login Automation
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  selenium-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Install dependencies
+        run: |
+          pip install flask selenium
+
+      - name: Start Flask application
+        run: |
+          nohup python app.py > app.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:5000/ > /dev/null; then
+              echo "Application started"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Run Selenium tests
+        run: python test_login.py
+```
