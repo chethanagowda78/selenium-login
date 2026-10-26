@@ -1,9 +1,8 @@
-```yaml
 name: Selenium Login Automation
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
@@ -17,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Set up Chrome
         uses: browser-actions/setup-chrome@v1
@@ -39,4 +38,3 @@ jobs:
 
       - name: Run Selenium tests
         run: python test_login.py
-```
